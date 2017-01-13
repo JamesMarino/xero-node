@@ -1,0 +1,20 @@
+{
+  "name": "xero-node",
+  "version": "1.0.0",
+  "description": "OAuth Node Wrapper for Xero",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "xero-node",
+    "xero",
+    "oauth"
+  ],
+  "author": "James Marino",
+  "license": "ISC",
+  "dependencies": {
+    "oauth": "^0.9.15",
+    "xml2js": "^0.4.17"
+  }
+}
