@@ -1,9 +1,5 @@
 "use strict";
 
-/**
- * @class Xero
- */
-
 const OAuth = require("oauth");
 const QueryString = require("querystring");
 const Parser = require("xml2js");
@@ -19,6 +15,10 @@ const XERO_OAUTH = {
     VERSION: "1.0A",
     SIGNATURE_METHOD: "HMAC-SHA1"
 };
+
+/**
+ * @class Xero
+ */
 
 class Xero {
 
@@ -37,30 +37,51 @@ class Xero {
         }
 
         // Set the Consumer Properties
-        this.ConsumerKey = properties.consumerKey;
-        this.ConsumerSecret = properties.consumerSecret;
-        this.CallbackUrl = properties.callbackUrl;
-        this.ApiVersion = properties.apiVersion;
+        this._ConsumerKey = properties.consumerKey;
+        this._ConsumerSecret = properties.consumerSecret;
+        this._CallbackUrl = properties.callbackUrl;
+        this._ApiVersion = properties.apiVersion;
 
         if (properties.hasOwnProperty("accessToken") &&
             properties.hasOwnProperty("accessTokenSecret")
         ) {
-            this.AccessToken = properties.accessToken;
-            this.AccessTokenSecret = properties.accessTokenSecret;
+            this._AccessToken = properties.accessToken;
+            this._AccessTokenSecret = properties.accessTokenSecret;
         } else {
-            this.AccessToken = null;
-            this.AccessTokenSecret = null;
+            this._AccessToken = null;
+            this._AccessTokenSecret = null;
         }
 
-        this.OAuth = new OAuth.OAuth(
+        this._OAuth = new OAuth.OAuth(
             XERO_URLS.REQUEST_TOKEN,
             XERO_URLS.ACCESS_TOKEN,
-            this.ConsumerKey,
-            this.ConsumerSecret,
+            this._ConsumerKey,
+            this._ConsumerSecret,
             XERO_OAUTH.VERSION,
-            this.CallbackUrl,
+            this._CallbackUrl,
             XERO_OAUTH.SIGNATURE_METHOD
         );
+
+    }
+
+    /**
+     * Formats OAuth Error
+     * @param error
+     * @returns {*}
+     * @private
+     */
+    static _handleOAuthError(error) {
+
+        if (error.hasOwnProperty("statusCode") &&
+            error.hasOwnProperty("data")
+        ) {
+            return {
+                statusCode: error.statusCode,
+                data: QueryString.parse(error.data)
+            }
+        } else {
+            return error;
+        }
 
     }
 
@@ -72,19 +93,19 @@ class Xero {
 
         return new Promise((resolve, reject) => {
 
-            this.OAuth.getOAuthRequestToken(
+            this._OAuth.getOAuthRequestToken(
                 {
-                    oauth_callback: this.CallbackUrl
+                    oauth_callback: this._CallbackUrl
                 },
                 (error, requestToken, requestTokenSecret) => {
                     if (error) {
-                        return reject(error);
+                        return reject(Xero._handleOAuthError(error));
                     } else {
 
                         let requestTokenVerification = XERO_URLS.AUTHORISE_URL + "?"
                             + QueryString.stringify({
                                 oauth_token: requestToken,
-                                oauth_callback: this.CallbackUrl
+                                oauth_callback: this._CallbackUrl
                             });
 
                         return resolve({
@@ -110,16 +131,16 @@ class Xero {
     getAccessToken(verifier, requestToken, requestTokenSecret) {
 
         return new Promise((resolve, reject) => {
-            this.OAuth.getOAuthAccessToken(
+            this._OAuth.getOAuthAccessToken(
                 requestToken,
                 requestTokenSecret,
                 verifier,
                 (error, accessToken, accessSecret) => {
                     if (error) {
-                        return reject(error);
+                        return reject(Xero._handleOAuthError());
                     } else {
-                        this.AccessToken = accessToken;
-                        this.AccessTokenSecret = accessSecret;
+                        this._AccessToken = accessToken;
+                        this._AccessTokenSecret = accessSecret;
 
                         return resolve({
                             AccessToken: accessToken,
@@ -137,7 +158,7 @@ class Xero {
      * @private
      */
     _validateProperties() {
-        if (!this.AccessToken || !this.AccessTokenSecret) {
+        if (!this._AccessToken || !this._AccessTokenSecret) {
             throw new Error("Access Tokens Missing");
         }
     }
@@ -155,16 +176,19 @@ class Xero {
         this._validateProperties();
 
         // Make the request
-        let url = XERO_URLS.API_ENDPOINT + this.ApiVersion + endpoint;
+        let url = XERO_URLS.API_ENDPOINT + this._ApiVersion + endpoint;
 
         if (parameters) {
             url += "?" + QueryString.stringify(parameters);
         }
 
         return new Promise((resolve, reject) => {
-            this.OAuth.get(url, this.AccessToken, this.AccessTokenSecret, (error, data) => {
+            this._OAuth.get(url, this._AccessToken, this._AccessTokenSecret, (error, data) => {
 
                 if (error) {
+
+
+
                     return reject(error);
                 } else {
 
