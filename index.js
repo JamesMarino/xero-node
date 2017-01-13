@@ -137,7 +137,7 @@ class Xero {
                 verifier,
                 (error, accessToken, accessSecret) => {
                     if (error) {
-                        return reject(Xero._handleOAuthError());
+                        return reject(Xero._handleOAuthError(error));
                     } else {
                         this._AccessToken = accessToken;
                         this._AccessTokenSecret = accessSecret;
