@@ -36,6 +36,13 @@ class Xero {
             throw new Error("Consumer Key, Secret, Callback and API Version URL Must be set");
         }
 
+        // Get User Agent Props if specified
+        this._UserAgent = "Node authentication";
+
+        if (properties.hasOwnProperty("userAgent")) {
+            this._UserAgent = properties.userAgent
+        }
+
         // Set the Consumer Properties
         this._ConsumerKey = properties.consumerKey;
         this._ConsumerSecret = properties.consumerSecret;
@@ -59,7 +66,13 @@ class Xero {
             this._ConsumerSecret,
             XERO_OAUTH.VERSION,
             this._CallbackUrl,
-            XERO_OAUTH.SIGNATURE_METHOD
+            XERO_OAUTH.SIGNATURE_METHOD,
+            null,
+            {
+                "Accept" : "*/*",
+                "Connection" : "close",
+                "User-Agent" : this._UserAgent
+            }
         );
 
     }
