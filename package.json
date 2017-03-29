@@ -1,5 +1,5 @@
 {
-  "name": "xero-node",
+  "name": "xero-oauth-node",
   "version": "1.2.1",
   "description": "OAuth Node Wrapper for Xero",
   "main": "index.js",
